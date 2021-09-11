@@ -62,22 +62,56 @@ from PIL import Image, ImageOps
 # load the image and convert into
 # numpy array
 
-img = Image.open('zima.jpg')
-#resized_img = img.resize((max_right_pixel_position,max_bottom_pixel_position), Image.ANTIALIAS)
+img = Image.open('earth.jpg')
 resized_img = ImageOps.fit(img, (max_right_pixel_position,max_bottom_pixel_position))
-# asarray() class is used to convert
-# PIL images into NumPy arrays
+
 numpydata = np.asarray(resized_img)
 
-plt.imshow(numpydata)
+#TODO shape depend of picture 
+
 
 for ecran in ecran_list:
     _ = add_physical_screen(numpydata, ecran,screen_pixel_per_mm)
 
-left = numpydata[0 : 1920, 1 : 1079]
-middle = numpydata[259 : 1337, 1080 : 3000]
-right = numpydata[0 : 1920, 3001 : 4079]
-bottom = numpydata[1339 : 1969, 1477 : 2603]
+def get_correct_top_position(ecran, screen_pixel_per_mm, reference_position = None):
+    return ecran.get_top_pixel_position()
+
+def get_correct_bottom_position(ecran, screen_pixel_per_mm, reference_position = None):
+    false_pixel_hauteur = int(round(ecran.size_in_mm[1] * screen_pixel_per_mm ,0))
+    return ecran.get_top_pixel_position() + false_pixel_hauteur
+    
+def get_correct_left_position(ecran, screen_pixel_per_mm, reference_position = None):
+    false_pixel_largeur = int(round(ecran.size_in_mm[0] * screen_pixel_per_mm,0))
+    center = (ecran.get_left_pixel_position() + ecran.get_right_pixel_position()) /2
+    return int(round(center - (false_pixel_largeur/2),0)) 
+
+def get_correct_right_position(ecran, screen_pixel_per_mm, reference_position = None):
+    false_pixel_largeur = int(round(ecran.size_in_mm[0] * screen_pixel_per_mm,0))
+    center = (ecran.get_left_pixel_position() + ecran.get_right_pixel_position()) /2
+    return int(round(center + (false_pixel_largeur/2),0))    
+
+screen_pixel_per_mm = ecran_droite.size_in_pixel[1] / ecran_droite.size_in_mm[1]
+
+left = numpydata[
+    get_correct_top_position(ecran_gauche, screen_pixel_per_mm) : 
+    get_correct_bottom_position(ecran_gauche, screen_pixel_per_mm) , 
+    get_correct_left_position(ecran_gauche, screen_pixel_per_mm)  : 
+    get_correct_right_position(ecran_gauche, screen_pixel_per_mm) ]
+middle = numpydata[
+    get_correct_top_position(ecran_milieu, screen_pixel_per_mm) : 
+    get_correct_bottom_position(ecran_milieu, screen_pixel_per_mm) , 
+    get_correct_left_position(ecran_milieu, screen_pixel_per_mm)  : 
+    get_correct_right_position(ecran_milieu, screen_pixel_per_mm) ]
+right = numpydata[
+    get_correct_top_position(ecran_droite, screen_pixel_per_mm) : 
+    get_correct_bottom_position(ecran_droite, screen_pixel_per_mm) , 
+    get_correct_left_position(ecran_droite, screen_pixel_per_mm)  : 
+    get_correct_right_position(ecran_droite, screen_pixel_per_mm) ]
+bottom = numpydata[
+    get_correct_top_position(ecran_bas, screen_pixel_per_mm) : 
+    get_correct_bottom_position(ecran_bas, screen_pixel_per_mm) , 
+    get_correct_left_position(ecran_bas, screen_pixel_per_mm)  : 
+    get_correct_right_position(ecran_bas, screen_pixel_per_mm) ]
 
 corrected_img_left = np.asarray(Image.fromarray(left).resize(ecran_gauche.size_in_pixel))
 corrected_img_middle = np.asarray(Image.fromarray(middle).resize(ecran_milieu.size_in_pixel))
