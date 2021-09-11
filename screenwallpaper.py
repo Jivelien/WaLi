@@ -1,25 +1,7 @@
 #!/usr/bin/env python3
-
-class Ecran:
-    def __init__(self, 
-                 size_pixel : (int, int), 
-                 size_mm : (int, int),
-                 position_in_pixel : (int, int)):
-        self.size_in_pixel = size_pixel # largeur , hauteur
-        self.size_in_mm = size_mm  # largeur , hauteur
-        self.position_in_pixel = position_in_pixel
-        
-    def get_left_pixel_position(self):
-        return  self.position_in_pixel[0]
-        
-    def get_top_pixel_position(self):
-        return self.position_in_pixel[1]
-    
-    def get_right_pixel_position(self):
-        return self.position_in_pixel[0] + self.size_in_pixel[0]
-
-    def get_bottom_pixel_position(self):
-        return self.position_in_pixel[1] + self.size_in_pixel[1]
+from ecran import Ecran
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 #TODO : get xrandr output directly
@@ -39,9 +21,6 @@ ecran_list = [ecran_gauche, ecran_milieu, ecran_droite, ecran_bas]
 
 max_right_pixel_position = max([ecran.get_right_pixel_position() for ecran in ecran_list])
 max_bottom_pixel_position = max([ecran.get_bottom_pixel_position() for ecran in ecran_list])
-
-import numpy as np
-import matplotlib.pyplot as plt
 
 test = np.zeros((max_bottom_pixel_position, max_right_pixel_position), dtype='uint8')
 plt.imshow(test)
@@ -82,17 +61,13 @@ from PIL import Image
   
 # load the image and convert into
 # numpy array
+
 img = Image.open('zima.jpg')
-resized_img = img.resize((max_right_pixel_position,max_bottom_pixel_position))
+resized_img = img.resize((max_right_pixel_position,max_bottom_pixel_position), Image.ANTIALIAS)
 # asarray() class is used to convert
 # PIL images into NumPy arrays
 numpydata = np.asarray(resized_img)
-  
-# <class 'numpy.ndarray'>
-print(type(numpydata))
-  
-#  shape
-print(numpydata.shape)
+
 plt.imshow(numpydata)
 
 for ecran in ecran_list:
