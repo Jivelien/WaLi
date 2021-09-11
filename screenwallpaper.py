@@ -57,13 +57,14 @@ for ecran in ecran_list:
 
 plt.imshow(test)
 
-from PIL import Image
+from PIL import Image, ImageOps
   
 # load the image and convert into
 # numpy array
 
 img = Image.open('zima.jpg')
-resized_img = img.resize((max_right_pixel_position,max_bottom_pixel_position), Image.ANTIALIAS)
+#resized_img = img.resize((max_right_pixel_position,max_bottom_pixel_position), Image.ANTIALIAS)
+resized_img = ImageOps.fit(img, (max_right_pixel_position,max_bottom_pixel_position))
 # asarray() class is used to convert
 # PIL images into NumPy arrays
 numpydata = np.asarray(resized_img)
@@ -102,5 +103,8 @@ wallpaper_correct[ecran_bas.get_top_pixel_position():ecran_bas.get_bottom_pixel_
 plt.imshow(wallpaper_correct)
 
 wallpaper_pic = Image.fromarray(wallpaper_correct)
-wallpaper_pic.save('test.jpg')
+
+import time
+now = int(time.time())
+wallpaper_pic.save(f"test_{now}.jpg")
 
