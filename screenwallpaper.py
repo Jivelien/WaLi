@@ -43,7 +43,7 @@ max_bottom_pixel_position = max([ecran.get_bottom_pixel_position() for ecran in 
 import numpy as np
 import matplotlib.pyplot as plt
 
-test = np.zeros((max_bottom_pixel_position, max_right_pixel_position))
+test = np.zeros((max_bottom_pixel_position, max_right_pixel_position), dtype='uint8')
 plt.imshow(test)
 
 def add_screen(array, screen):
@@ -58,36 +58,74 @@ plt.imshow(test)
 
 def add_physical_screen(array, ecran, screen_pixel_per_mm, reference_position = None):
     false_pixel_largeur = int(round(ecran.size_in_mm[0] * screen_pixel_per_mm,0))
-    print(f"corrected largeur : {false_pixel_largeur}")
     false_pixel_hauteur = int(round(ecran.size_in_mm[1] * screen_pixel_per_mm ,0))
-    print(f"corrected largeur : {false_pixel_hauteur}")
     center = (ecran.get_left_pixel_position() + ecran.get_right_pixel_position()) /2
-    print(f"center : {center}")
-    
+    #print(f"center : {center}")
     corrected_top = ecran.get_top_pixel_position() 
     corrected_bottom = ecran.get_top_pixel_position() + false_pixel_hauteur
-    print(f"hauteur : {corrected_top} - {corrected_bottom} ")
-    
+    #print(f"hauteur : {corrected_top} - {corrected_bottom} ")
     corrected_left = int(round(center - (false_pixel_largeur/2),0)) 
     corrected_right = int(round(center + (false_pixel_largeur/2),0))
-    print(f"largeur : {corrected_left} - {corrected_right} ")
-    
+    #print(f"largeur : {corrected_left} - {corrected_right}")
+    print(f"dim : {corrected_top} : {corrected_bottom}, {corrected_left} : {corrected_right}")
     array[corrected_top : corrected_bottom, corrected_left : corrected_right ]  += 1
-
     return array
 
 screen_pixel_per_mm = ecran_droite.size_in_pixel[1] / ecran_droite.size_in_mm[1]
 
 for ecran in ecran_list:
     test = add_physical_screen(test, ecran,screen_pixel_per_mm)
-    
-    
-test = np.zeros((max_bottom_pixel_position, max_right_pixel_position))
-
-_ = add_physical_screen(test, ecran_gauche,screen_pixel_per_mm)
-_ = add_physical_screen(test, ecran_milieu,screen_pixel_per_mm)
-_ = add_physical_screen(test, ecran_droite,screen_pixel_per_mm)
-_ = add_physical_screen(test, ecran_bas,screen_pixel_per_mm)
 
 plt.imshow(test)
-    
+
+from PIL import Image
+  
+# load the image and convert into
+# numpy array
+img = Image.open('zima.jpg')
+resized_img = img.resize((max_right_pixel_position,max_bottom_pixel_position))
+# asarray() class is used to convert
+# PIL images into NumPy arrays
+numpydata = np.asarray(resized_img)
+  
+# <class 'numpy.ndarray'>
+print(type(numpydata))
+  
+#  shape
+print(numpydata.shape)
+plt.imshow(numpydata)
+
+for ecran in ecran_list:
+    _ = add_physical_screen(numpydata, ecran,screen_pixel_per_mm)
+
+left = numpydata[0 : 1920, 1 : 1079]
+middle = numpydata[259 : 1337, 1080 : 3000]
+right = numpydata[0 : 1920, 3001 : 4079]
+bottom = numpydata[1339 : 1969, 1477 : 2603]
+
+corrected_img_left = np.asarray(Image.fromarray(left).resize(ecran_gauche.size_in_pixel))
+corrected_img_middle = np.asarray(Image.fromarray(middle).resize(ecran_milieu.size_in_pixel))
+corrected_img_right = np.asarray(Image.fromarray(right).resize(ecran_droite.size_in_pixel))
+corrected_img_bottom = np.asarray(Image.fromarray(bottom).resize(ecran_bas.size_in_pixel))
+
+plt.imshow(corrected_img_left)
+
+wallpaper_correct = np.zeros((max_bottom_pixel_position, max_right_pixel_position, 3), dtype='uint8')
+
+wallpaper_correct[ecran_gauche.get_top_pixel_position():ecran_gauche.get_bottom_pixel_position(),
+                  ecran_gauche.get_left_pixel_position():ecran_gauche.get_right_pixel_position()] = corrected_img_left
+
+wallpaper_correct[ecran_milieu.get_top_pixel_position():ecran_milieu.get_bottom_pixel_position(),
+                  ecran_milieu.get_left_pixel_position():ecran_milieu.get_right_pixel_position()] = corrected_img_middle
+
+wallpaper_correct[ecran_droite.get_top_pixel_position():ecran_droite.get_bottom_pixel_position(),
+                  ecran_droite.get_left_pixel_position():ecran_droite.get_right_pixel_position()] = corrected_img_right
+
+wallpaper_correct[ecran_bas.get_top_pixel_position():ecran_bas.get_bottom_pixel_position(),
+                  ecran_bas.get_left_pixel_position():ecran_bas.get_right_pixel_position()] = corrected_img_bottom
+
+plt.imshow(wallpaper_correct)
+
+wallpaper_pic = Image.fromarray(wallpaper_correct)
+wallpaper_pic.save('test.jpg')
+
