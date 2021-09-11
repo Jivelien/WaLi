@@ -69,10 +69,6 @@ numpydata = np.asarray(resized_img)
 
 #TODO shape depend of picture 
 
-
-for ecran in ecran_list:
-    _ = add_physical_screen(numpydata, ecran,screen_pixel_per_mm)
-
 def get_correct_top_position(ecran, screen_pixel_per_mm, reference_position = None):
     return ecran.get_top_pixel_position()
 
@@ -118,7 +114,6 @@ corrected_img_middle = np.asarray(Image.fromarray(middle).resize(ecran_milieu.si
 corrected_img_right = np.asarray(Image.fromarray(right).resize(ecran_droite.size_in_pixel))
 corrected_img_bottom = np.asarray(Image.fromarray(bottom).resize(ecran_bas.size_in_pixel))
 
-plt.imshow(corrected_img_left)
 
 wallpaper_correct = np.zeros((max_bottom_pixel_position, max_right_pixel_position, 3), dtype='uint8')
 
