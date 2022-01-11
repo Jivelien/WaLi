@@ -72,22 +72,25 @@ def get_correct_right_position(ecran, screen_pixel_per_mm, reference_position = 
 wallpaper_correct = np.zeros((max_bottom_pixel_position, max_right_pixel_position, 3), dtype='uint8')
 
 for screen in screens:
-    left = numpydata[
-        max(0,get_correct_top_position(screen, screen_pixel_per_mm)) : 
-        get_correct_bottom_position(screen, screen_pixel_per_mm) , 
-        max(0,get_correct_left_position(screen, screen_pixel_per_mm))  : 
-        get_correct_right_position(screen, screen_pixel_per_mm) ]
-    corrected_img_left = np.asarray(Image.fromarray(left).resize(screen.size_in_pixel))
-    wallpaper_correct[screen.get_top_pixel_position():screen.get_bottom_pixel_position(),
-                      screen.get_left_pixel_position():screen.get_right_pixel_position()] = corrected_img_left
-
-    
+    try:
+        left = numpydata[
+            max(0,get_correct_top_position(screen, screen_pixel_per_mm)) : 
+            get_correct_bottom_position(screen, screen_pixel_per_mm) , 
+            max(0,get_correct_left_position(screen, screen_pixel_per_mm))  : 
+            get_correct_right_position(screen, screen_pixel_per_mm) ]
+        corrected_img_left = np.asarray(Image.fromarray(left).resize(screen.size_in_pixel))
+        wallpaper_correct[screen.get_top_pixel_position():screen.get_bottom_pixel_position(),
+                          screen.get_left_pixel_position():screen.get_right_pixel_position()] = corrected_img_left
+    except:
+        pass
+        
 plt.imshow(wallpaper_correct)
 
 wallpaper_pic = Image.fromarray(wallpaper_correct)
 
 import time
 now = int(time.time())
+
 wallpaper_pic.save(f"{now}.jpg")
 
 os.system(f'gsettings set org.gnome.desktop.background picture-uri "$(pwd)/{now}.jpg"')
